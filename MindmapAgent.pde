@@ -6,9 +6,10 @@ import processing.net.*;
 Client myClient; 
 int dataIn; 
 
+int randomNode = -1 ;
+String str="2";
 
-String str="1";
-
+int index_num;
 
 ///////////////////////////////////////////////
 
@@ -146,7 +147,7 @@ void draw() {
     n.get(i).linedisp();
   }
   for (int i = 0; i < n.size (); ++i) {
-    n.get(i).textdisp();
+    n.get(i).textdisp(i);
   }
 
 
@@ -231,6 +232,20 @@ void mousePressed() {
   nowb = f;
 
   if (mouseButton == RIGHT) {
+    if (ndndcreate) {
+      //randomNode
+      for (int j = 0; j < n.size (); ++j) {
+        if (n.get(j).red_flag) {
+          //選択されてたら、そのインデックスをnumに入れる
+          index_num = j;
+          break;
+        }
+      }
+      randomNode =int( random(0, n.size()));
+      while (index_num == randomNode) {
+        randomNode =int( random(0, n.size()));
+      }
+    }
     thread("input");
     //myClient.write(str);
 
@@ -329,7 +344,7 @@ void input() {
   } else if (addcreate) {
     n.add(new Node(str, mouseX, mouseY, n.size()-1));
   } else if (ndndcreate) {
-    n.add(new Node(str, mouseX, mouseY, n.size()-1, 1));
+    n.add(new Node(str, mouseX, mouseY, index_num, 1));
     println("ndndcreate");
   }
 }
