@@ -1,7 +1,6 @@
-import java.awt.*;
+import java.awt.*; //<>// //<>//
 import javax.swing.*;
-import processing.net.*; 
-
+import processing.net.*;
 
 //mode変数
 static final int NEW = 1;
@@ -9,25 +8,27 @@ static final int ADD = 2;
 static final int SELECT = 3;
 static final int DELETE = 4;
 static final int EXPAND = 5;
+static final int LOADIMG = 6;
+
 //全体管理用変数
 int mode = NEW;
+int randomNode = -1;
+int index_num = -1;
+String node_word = "";
 
-
-//////////////////////////tuusin//////////////
-
-
+//通信
 Client myClient; 
-int dataIn; 
 
-int randomNode = -1 ;
-String str="2";
+//画像用変数
+PImage imgA, imgB, imgr, imgl;//エージェント、吹き出し右、吹き出し左
+PImage webImg =null;
 
-int index_num;
+//セントラルイメージの位置変数
+int imgX, imgY;
 
-///////////////////////////////////////////////
-
-//int s,ss;
-
+//日本語入力パネル
+JPanel panel = new JPanel();
+JTextField text1;
 
 ///////////////////////AGENT/////////////////
 
@@ -55,29 +56,8 @@ int nowb = -1;
 
 boolean Rflag=false, Lflag=false;
 
-//int morning=0,afternoon=0,evening=0;
-//int hour = hour();
-
-//int zahyo_x = 0;
-//int zahyo_y = 0;
-
-PImage imgA, imgB, imgr, imgl;//エージェント、吹き出し右、吹き出し左
-
-
-
-
-
-/////////////////////////////////////////////////
-
-
-
-
-
-boolean rand = true;
-
-
-final int center=0, boi=1, node=2;
-int phase = center;
+final int CENTER=0, BOI=1, NODE=2;
+int phase = CENTER;
 int befS=0, befN=0;
 int bef=0;
 
@@ -93,13 +73,8 @@ String [][] mes = {
     }
 };
 
-PImage webImg =null;
-int imgX, imgY;
-boolean newcreate = true;//新規作成モード　デフォルトでは新規作成
-boolean addcreate = false;//追加作成モード　  
-boolean delete_flag = false;
-boolean select = false;  
-boolean expand_mode = false;//考えてみようノード機能
+
+
 
 
 float wheel = 0.0;//マウスの真ん中のグリグリ
@@ -107,8 +82,7 @@ int traX, traY;//マップ全体移動用変数
 
 ArrayList<Node> n;
 
-JPanel panel = new JPanel();
-JTextField text1;
+
 
 void setup () {
     frameRate(30);
@@ -126,6 +100,12 @@ void setup () {
 
     myClient = new Client(this, "127.0.0.1", 8083); 
     //myClient.write(input());
+
+    //画像読み込み
+    imgA = loadImage("usa.png");
+    imgB = loadImage("usaB.png");
+    imgr = loadImage("Fukimigiyo.png");
+    imgl = loadImage("Fukihidariyo.png");
 }
 
 void draw() {
@@ -157,7 +137,6 @@ void draw() {
         break;
     }
 
-
     pushMatrix();
 
     scale(1+wheel/100);
@@ -169,38 +148,7 @@ void draw() {
         n.get(i).textdisp(i);
     }
 
-
-    //text(agent(),20,10);  //テキスト表示
     popMatrix();
-
-    /*
-    if(webImg != null){
-     webImg.resize(webImg.width/10,webImg.height/10);
-     image(webImg,imgX,imgY);
-     println("img!");  
-     
-     }*/
-
-
-    imgA = loadImage("usa.png");
-    imgB = loadImage("usaB.png");
-    imgr = loadImage("Fukimigiyo.png");
-    imgl = loadImage("Fukihidariyo.png");
-
-    //translate(width/2,height/2);
-    /*  x += dir_x * speed;
-     y += dir_y * speed;
-     
-     if ( ( x < 0 ) || ( x > width - imgA.width ) ) {
-     dir_x = - dir_x;
-     }
-     
-     if ( ( y < 0 ) || ( y > height - imgA.height ) ) {
-     dir_y = - dir_y;
-     }*/
-    // println(mouseX,mouseY);
-
-    //  text("これってどういう意味？",x,y);
 
     if (f-nowb<3) {
         x += x_speed;
@@ -211,8 +159,6 @@ void draw() {
             y += y_speed;
         }
     }
-
-
     if (x<248) {
         image(imgA, x, y);
         image(imgl, x-180, y-100);
@@ -245,13 +191,12 @@ void mousePressed() {
     x_speed = x_speed/30;
     y_speed = y_speed/30;
 
-    println(x_speed);
 
     nowf = fcount;
     nowb = f;
 
     if (mouseButton == RIGHT) {
-        if (expand_mode) {
+        if (mode == EXPAND) {
             //randomNode
             for (int j = 0; j < n.size (); ++j) {
                 if (n.get(j).red_flag) {
@@ -259,6 +204,9 @@ void mousePressed() {
                     index_num = j;
                     break;
                 }
+            }
+            if (index_num < 0) {
+                mode = ADD;
             }
             randomNode =int( random(0, n.size()));
             while (index_num == randomNode) {
@@ -282,23 +230,8 @@ void mousePressed() {
 
 void keyPressed() {
     if (key == 'i') {
-        String url ="";// = input();
-        println(url);
-        String str[] = loadStrings("https://www.googleapis.com/customsearch/v1?key=AIzaSyCDIu0aU964IOLmx8MACeLpjXwTgf2ZwcQ&cx=000893818175528849387:9ml_7eulfck&searchType=image&q="+url);
-        imgX = mouseX;
-        imgY = mouseY;
-
-
-        for (int i = 0; i<str.length; i++) {
-            if (str[i].indexOf("\"link\"") != -1) {
-                println(str[i]);
-                println();
-                String tmp = str[i].substring(str[i].indexOf("h"));
-                println("OK!　　　　　　"+tmp.substring(0, tmp.length()-2));
-                webImg = loadImage(tmp.substring(0, tmp.length()-2));
-                break;
-            }
-        }
+        mode = LOADIMG;
+        input();
     }
     //新規作成モード
     if (key == 'n') {
@@ -333,50 +266,59 @@ void mouseWheel(MouseEvent event) {
 
 
 void input() {
-    JOptionPane.showConfirmDialog(
+    int ok_cancel = JOptionPane.showConfirmDialog(
         null, // オーナーウィンドウ
         panel, // メッセージ
         "日本語入力", // ウィンドウタイトル
         JOptionPane.OK_CANCEL_OPTION, // オプション（ボタンの種類）
         JOptionPane.QUESTION_MESSAGE);  // メッセージタイプ（アイコンの種類）
-    str = text1.getText(); //変数にテキストの内容を入れる
-
-    if (mode == NEW ) {
-        n.add(new Node(str, mouseX, mouseY ));
-    } else if (mode == ADD) {
-        n.add(new Node(str, mouseX, mouseY, n.size()-1));
-    } else if (mode == EXPAND) {
-        n.add(new Node(str, mouseX, mouseY, index_num, 1));
+    if (ok_cancel == 0) {
+        node_word = text1.getText(); //変数にテキストの内容を入れる
+        if (node_word.length() > 0) {
+            if (mode == NEW ) {
+                n.add(new Node(node_word, mouseX, mouseY ));
+            } else if (mode == ADD) {
+                n.add(new Node(node_word, mouseX, mouseY, n.size()-1));
+            } else if (mode == EXPAND) {
+                n.add(new Node(node_word, mouseX, mouseY, index_num, randomNode));
+                index_num = -1;
+                randomNode = -1;
+            } else if (mode == LOADIMG) {
+                loadWeb_image(node_word);
+            }
+        }
+        node_word = "";
+        text1.setText("");
     }
 }
 
 String agent() {
     String message ="";
     switch(phase) {
-    case center : 
+    case CENTER : 
         if (n.size()!=0) {
             message ="";
             befS = frameCount;
-            phase = boi;
+            phase = BOI;
         } else if (frameCount>900)
-            message = mes[center][1]; //考えたいものの名前でいいよ
+            message = mes[CENTER][1]; //考えたいものの名前でいいよ
         else
-            message = mes[center][0]; //セントラルイメージを書いてみて
+            message = mes[CENTER][0]; //セントラルイメージを書いてみて
         break;
-    case boi  : 
+    case BOI  : 
         if ( n.size()<5 ) {
             if ( (frameCount-befS) < 150)
-                message = mes[boi][0]; //いくつかBOIを伸ばしてみて
+                message = mes[BOI][0]; //いくつかBOIを伸ばしてみて
             else
-                message = mes[boi][1]; //あと１つか２つ作れない？
+                message = mes[BOI][1]; //あと１つか２つ作れない？
         } else {
             befS = frameCount;
             befN = n.size();
             bef = 0;
-            phase = node;
+            phase = NODE;
         }
         break;
-    case node  :  
+    case NODE  :  
         if (n.size() > befN) {
             befS = frameCount;
             int r = int(random(1, 4));
@@ -391,7 +333,7 @@ String agent() {
             bef = r;
         }
 
-        message = mes[node][bef]; //今この中で一番好きなのは？、ここからもう伸びない？ 
+        message = mes[NODE][bef]; //今この中で一番好きなのは？、ここからもう伸びない？ 
         befN = n.size();
         break;
     default : 
@@ -399,4 +341,23 @@ String agent() {
         break;
     }
     return message;
+}
+void loadWeb_image(String word) {
+    println(word);
+    //api_keyの更新が必要
+    String str[] = loadStrings("https://www.googleapis.com/customsearch/v1?key=AIzaSyCDIu0aU964IOLmx8MACeLpjXwTgf2ZwcQ&cx=000893818175528849387:9ml_7eulfck&searchType=image&q="+word);
+    imgX = mouseX;
+    imgY = mouseY;
+
+
+    for (int i = 0; i<str.length; i++) {
+        if (str[i].indexOf("\"link\"") != -1) {
+            println(str[i]);
+            println();
+            String tmp = str[i].substring(str[i].indexOf("h"));
+            println("OK!　　　　　　"+tmp.substring(0, tmp.length()-2));
+            webImg = loadImage(tmp.substring(0, tmp.length()-2));
+            break;
+        }
+    }
 }
