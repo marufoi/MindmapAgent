@@ -196,6 +196,10 @@ void mousePressed() {
     nowb = f;
 
     if (mouseButton == RIGHT) {
+     /* String str = input();
+     
+      if(str ==""){
+      }*/
         if (mode == EXPAND) {
             //randomNode
             for (int j = 0; j < n.size (); ++j) {
@@ -214,12 +218,12 @@ void mousePressed() {
             }
         }
         thread("input");
-        //myClient.write(str);
+       // myClient.write(str);
 
 
-        //println("受信開始");
-        //println(myClient.read());
-        //println("受信完了");
+       println("受信開始");
+       println(myClient.read());
+       println("受信完了");
     }
     if (mode == ADD) {
         for (int i = 0; i < n.size (); ++i) {
@@ -275,6 +279,7 @@ void input() {
     if (ok_cancel == 0) {
         node_word = text1.getText(); //変数にテキストの内容を入れる
         if (node_word.length() > 0) {
+           myClient.write(node_word);
             if (mode == NEW ) {
                 n.add(new Node(node_word, mouseX, mouseY ));
             } else if (mode == ADD) {
