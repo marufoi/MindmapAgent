@@ -34,11 +34,11 @@ class Node {
         pre_y = n.get(num).y + 15;
     }
     //expand_modeの時
-    Node(String _str, int _x, int _y, int num, int randomNode) { //<>//
+    Node(String _str, int _x, int _y, int num, int randomNode) { //<>// //<>// //<>//
         expand_mode = true;
 
         str = _str;
-        x = (_x + n.get(randomNode).x) / 2 - traX; //<>//
+        x = (_x + n.get(randomNode).x) / 2 - traX; //<>// //<>// //<>//
         y = (_y + n.get(randomNode).y) / 2 - traY;
 
         node_width = int(textWidth(str)) * 2 +16;
